@@ -2,26 +2,10 @@
 
 ## 快速开始
 ### 初始化你的web服务器，必须使用https访问。
-假设你的web服务器地址是： https://your.website.com/ 。 你的web服务器静态资源是一个空目录。
-
-### 下载静态资源
-进入你的web服务器根目录：
-```shell
-git clone https://github.com/nxtele/webcall
-```
-
-### 运行demo页面
-在浏览器中打开： https://your.website.com/example/demo.html
-
-**如果浏览器弹出'是否允许使用麦克风' 提示，选择允许**
-
-### 获取WebCall账号
-WebCall在登录时，需要使用Webcall账号，也就是下面示例中的nxuser/nxpass，您可以登录[NXCLOUD控制台](https://www.nxcloud.com/webCall/mobileList)获取和管理它们。
-
 ## SDK使用说明
 
 ### SDK使用步骤
-1. 导入 nxwebrtc.js。
+1. 导入lib中的 nxwebrtc.js。
 2. 定义profile，设置 nxuser,nxpass(WebCall账号),logLevel,playTone等属性 ，
 3. new NxwCall(profile) 创建对象 nxwcall，并基于 nxwcall.myEvents 设置回调方法。 
 4. nxwcall会自动启动状态机，在注册成功后，进入 UA_READY 状态，可呼入呼出。
@@ -121,34 +105,11 @@ let profile = {
     ccQueue: '坐席账号'
   };
 ```
- - **nxuser和nxpass是NXCLOUD的分配的Webcall账户，不是NXCLOUD的用户账户**
  - audioElementId与playElementId 是页面的audio组件的id
  - 如果需要自定义playTone请参考<a href='#audiolist'>列表</a>。
 
 
-#### 4. 编写回调函数
-```js
-function setupEvents(nxwcall) {
-    let e = nxwcall.myEvents;
-    console.log("setupEvents e=", e)
-
-    e.on("onCallCreated", function (desnationNumber) {
-        console.log("================", "onCallCreated", desnationNumber)        
-    });
-    e.on("onRegistered", function (sipId) {
-        console.log("================", "onRegistered", sipId)        
-    });
-    e.on("onCallReceived", function (callerNumber) {
-        console.log("================", "onCallReceived", callerNumber)        
-    });
-    e.on("onCallAnswered", function () {
-        console.log("================", "onCallAnswered")
-    });
-}
-```
-nxwebrtc SDK库封装了多个<a href='#eventlist'>事件通知</a>,可以在相应的事件回调函数中，和业务逻辑互动。
-
-#### 5. 初始化并启动对象
+#### 4. 初始化并启动对象
 把定义的profile作为NxwCall的构造函数的参数，会自动创建nxwcall对象，并且尝试自动执行状态转换，先执行NXAPI 认证，然后连接到wss服务器，然后注册成功后进入UA_READY状态。
 ```js
 function initApp() {  
@@ -158,6 +119,40 @@ function initApp() {
   }
 }
 ```
+
+#### 5. 编写回调函数
+```js
+function setupEvents(nxwcall) {
+    let e = nxwcall.myEvents;
+    console.log("setupEvents e=", e)
+
+    e.on("onCallCreated", function (desnationNumber) {  // 发起呼叫
+        console.log("================", "onCallCreated", desnationNumber)        
+    });
+    e.on("onRegistered", function (sipId) { // 话机注册成功
+        console.log("================", "onRegistered", sipId)        
+    });
+    e.on("onCallReceived", function (callerNumber) { // 电话呼入
+        console.log("================", "onCallReceived", callerNumber)        
+    });
+    e.on("onCallAnswered", function () { // 接听
+        console.log("================", "onCallAnswered")
+    });
+    e.on("onAccept", function (param1) { // 获取CcallId
+        console.log("=====获取参数======", "onAccept", param1);
+    })
+    e.on("onServerDisconnect", function (param1) { // wss断开
+        console.log("=====获取参数======", "onServerDisconnect", param1);
+    })
+    e.on("onServerConnect", function (param1) { // wss链接
+     	console.log("================", "onServerConnect", param1);
+    })    
+    e.on("onUnregistered", function (param1) { // 话机注册失败
+        console.log("=====获取参数======", "onUnregistered", param1);
+    })
+}
+```
+nxwebrtc SDK库封装了多个<a href='#eventlist'>事件通知</a>,可以在相应的事件回调函数中，和业务逻辑互动。
 
 #### 6. 开始测试
 在 onRegistered 回调完成之后，才能执行呼出、和处理呼入请求。
@@ -266,24 +261,19 @@ comingOrderId|RW|在呼入时的已经携带的orderId信息
 ## 主要方法
 #### 发起呼叫
 ```js
-placeCall(target: string, hdrs?: Array<string>)  // target：被叫号码
-let hdrs = new Array("X-NXRTC-Key: value", "X-NXRTC-Abc: 123"); // hdrs： 可选附加的sip header 
-nxwcall.placeCall(target,hdrs);
+placeCall(callNumber)  // target：被叫号码
+let hdrs = new Array("X-NXCC-Out-Caller-Number: ${主叫号码}"); // hdrs： 可选附加的sip header 
+nxwcall.placeCall(callNumber,hdrs);
 ```
 
 #### 接通来电
 ```js
-answerCall(hdrs?: Array<string>) // 参数 hdrs 为接通SIP呼入，发送 200 OK 时携带的sip header
-```
-
-#### 拒接来电
-```js
-declineCall() // 对来电呼入，直接挂断。
+nxwcall.answerCall()
 ```
 
 #### 挂断呼叫
 ```js
-hangupCall()  //对已经接通的呼出或呼入的SIP呼叫，本地主动挂断。
+nxwcall.hangupCall()  //对已经接通的呼出或呼入的SIP呼叫，本地主动挂断。
 ```
 
 ### 其它方法
