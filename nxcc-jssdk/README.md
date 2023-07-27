@@ -4,12 +4,16 @@
 
 ### Initialize your web server, which must be accessed using https.
 
+### Get NXLINK account
+
+When jssdk logs in, you need to use the nxlink account, which is the account password required to obtain the TOKEN interface in the following example. You can log in to the [NXLINK](https://nxlink.nxcloud.com/admin/#/register) to obtain and manage them.
+
 ## SDK Instructions
 
 ### SDK usage steps
 
 1. Import lib’s nxwebrtc.js.
-2. Define profile, set nxuser, nxpass (WebCall account), logLevel, playTone and other attributes,
+2. Define profile, set nxuser, nxpass (sip account), logLevel, playTone and other attributes,
 3. new NxwCall(profile) creates the object nxwcall and sets the callback method based on nxwcall.myEvents.
 4. nxwcall will automatically start the state machine. After the registration is successful, it will enter the UA_READY state, and you can call in and out.
 5. It is usually necessary to perform related processing for the received event in the callback method. You can call the api to perform the corresponding functions: initiate a call, connect a call, and hang up a call.
@@ -102,12 +106,12 @@ let profile = {
   nxtype: 6,
   audioElementId: "remoteAudio",
   playElementId: "playAudio",
-  audioSrcPath: "audioUrl",
-  domain: "domain",
-  wssurl: "wssurl",
-  ccAgent: "email",
-  ccToken: "Token",
-  ccQueue: "groupNo"
+  audioSrcPath: "https://nxcc-sgp-test-1259196162.cos.ap-singapore.myqcloud.com/static/resource/audio",
+    domain: `${domain}`,
+    wssurl: `${wssurl}`,
+    ccAgent: `${email}`,
+    ccToken: `${Token}`,
+    ccQueue: `${groupNo}`
 };
 ```
 
@@ -147,16 +151,16 @@ function setupEvents(nxwcall) {
     console.log("================", "onCallAnswered");
   });
   e.on("onAccept", function(param1) { // Get the CcallId
-    console.log("=====获取参数======", "onAccept", param1);
+    console.log("=====Get the parameters======", "onAccept", param1);
   });
   e.on("onServerDisconnect", function(param1) {
-    console.log("=====获取参数======", "onServerDisconnect", param1);
+    console.log("=====Get the parameters======", "onServerDisconnect", param1);
   });
   e.on("onServerConnect", function(param1) {
     console.log("================", "onServerConnect", param1);
   });
   e.on("onUnregistered", function(param1) {
-    console.log("=====获取参数======", "onUnregistered", param1);
+    console.log("=====Get the parameters======", "onUnregistered", param1);
   });
 }
 ```
@@ -309,9 +313,9 @@ hangupCall(); //For an outgoing or incoming SIP call that has been connected, th
 The manual registration and cancellation of the account is generally not required for this manual operation. The SDK will automatically maintain the state machine and try its best to ensure the registered state.
 
 ```js
-register(); // Registration of WebCall account.
+register(); // Registration of sip account.
 
-unregister(); // Logout of the WebCall account.
+unregister(); // Logout of the sip account.
 ```
 
 #### disconnect wss connection

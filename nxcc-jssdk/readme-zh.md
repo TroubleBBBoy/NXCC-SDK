@@ -2,11 +2,16 @@
 
 ## 快速开始
 ### 初始化你的web服务器，必须使用https访问。
+
+### 获取用户账号
+
+jssdk在登录时，需要使用nxlink账号，也就是下面示例中获取TOKEN接口所需要的账号密码，您可以前往[NXLINK](https://nxlink.nxcloud.com/admin/#/register)获取和管理它们。
+
 ## SDK使用说明
 
 ### SDK使用步骤
 1. 导入lib中的 nxwebrtc.js。
-2. 定义profile，设置 nxuser,nxpass(WebCall账号),logLevel,playTone等属性 ，
+2. 定义profile，设置 nxuser,nxpass(话机账号),logLevel,playTone等属性 ，
 3. new NxwCall(profile) 创建对象 nxwcall，并基于 nxwcall.myEvents 设置回调方法。 
 4. nxwcall会自动启动状态机，在注册成功后，进入 UA_READY 状态，可呼入呼出。
 5. 通常需要在回调方法中，针对收到的事件，执行相关的处理。可以调用api执行对应的功能：发起呼叫、接通呼叫、挂断呼叫。
@@ -23,11 +28,11 @@ let nxwcall = null;         //对象的全局实例，尚未初始化
 
 #### 2. 获取TOKEN、话机注册信息
 
-/admin/saas_plat/user/login     api请求获取Token
+https://nxlink.nxcloud.com//admin/saas_plat/user/login     api请求获取Token
 
 ```
 请求体
-curl --location --request POST '/admin/saas_plat/user/login' \
+curl --location --request POST 'https://nxlink.nxcloud.com/admin/saas_plat/user/login' \
 --header 'lang: zh_CN' \
 --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
 --header 'Content-Type: application/json' \
@@ -51,11 +56,11 @@ curl --location --request POST '/admin/saas_plat/user/login' \
 
 ```
 
-/cc/fs/webCall/register    api请求获取注册信息
+https://nxlink.nxcloud.com/cc/fs/webCall/register    api请求获取注册信息
 
 ```
 请求体
-curl --location --request POST 'cc/fs/webCall/register' \
+curl --location --request POST 'https://nxlink.nxcloud.com/cc/fs/webCall/register' \
 --header 'usertoken: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEsInV1SWQiOiI2NGMxY2I2Y2IxYmNlYzE0NjM1ZTIyMGUifQ.rYlUFXIqTnP9vCAkkHIU_jGl5SO_oBJq4nzKp8Ivx7g' \
 --header 'lang: zh_CN' \
 --header 'Authorization;' \
@@ -97,12 +102,12 @@ let profile = {
     nxtype: 6,
     audioElementId: "remoteAudio", 
     playElementId: "playAudio",
-    audioSrcPath: "音频路径",
-    domain: '域名',
-    wssurl: 'wssurl',
-    ccAgent: 'email',
-    ccToken: 'Token',
-    ccQueue: '坐席账号'
+    audioSrcPath: "https://nxcc-sgp-test-1259196162.cos.ap-singapore.myqcloud.com/static/resource/audio",
+    domain: `${domain}`,
+    wssurl: `${wssurl}`,
+    ccAgent: `${email}`,
+    ccToken: `${Token}`,
+    ccQueue: `${groupNo}`
   };
 ```
  - audioElementId与playElementId 是页面的audio组件的id
@@ -284,9 +289,9 @@ nxwcall.hangupCall()  //对已经接通的呼出或呼入的SIP呼叫，本地�
 
 ```js
 
-register() // WebCall账号的注册。
+register() // 话机账号的注册。
 
-unregister() // WebCall账号的注销。
+unregister() // 话机账号的注销。
 
 ```
 
