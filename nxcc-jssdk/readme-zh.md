@@ -37,11 +37,77 @@ let NxwCall = NXW.default;  //对象的类型声明
 let nxwcall = null;         //对象的全局实例，尚未初始化
 ```
 
-#### 2. 定义profile
+#### 2. 获取TOKEN、话机注册信息
+
+/admin/saas_plat/user/login     api请求获取Token
+
+```
+请求体
+curl --location --request POST '/admin/saas_plat/user/login' \
+--header 'lang: zh_CN' \
+--header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	loginMethod: 0， // 0 邮箱方式登录 1 手机号方式登录
+	email: "email"， // 邮箱方式登录，手机号登陆：phone： “phone”, 
+	password: "password"
+}'
+返回体
+{
+    "code": 0,
+    "message": "",
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEsInV1SWQiOiI2NGMyMjBjNmIxYmMyNjUyM2NjMTIyZmQifQ.uMMrkXVSAXht0AN_KlxN2LHhS9GwlmTYYp61Rm0QXGk",
+        "lang": "zh_CN",
+        "time_zone_id": 105,
+        "time_zone": "UTC+08:00"
+    },
+    "traceId": "f062fc22055bd86f236ea63032fed48e"
+}
+
+```
+
+/cc/fs/webCall/register    api请求获取注册信息
+
+```
+请求体
+curl --location --request POST 'cc/fs/webCall/register' \
+--header 'usertoken: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEsInV1SWQiOiI2NGMxY2I2Y2IxYmNlYzE0NjM1ZTIyMGUifQ.rYlUFXIqTnP9vCAkkHIU_jGl5SO_oBJq4nzKp8Ivx7g' \
+--header 'lang: zh_CN' \
+--header 'Authorization;' \
+--header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "agentName": "8618344031797"
+}'
+返回体
+{
+    "reqId": "41aa5b571b66b33c028c1ef1b1204ecf",
+    "code": 0,
+    "msg": "请求成功",
+    "data": {
+        "domain": "domain", // 域名
+        "groupNo": "groupNo", // 坐席组
+        "sipNum": "sipNum", // 坐席账号
+        "url": "wssurl", // wssurl
+        "email": "email", // 邮箱
+        "tenantNickName": ’tenantNickName‘,// 租户昵称
+        "company": ’company‘, // 认证企业
+        "tenantName": ’tenantName‘, // 租户
+        "roleName": ’roleName‘, // 角色
+        "utcDate": "2023/07/27", //utc时间
+    }
+}
+
+```
+
+
+
+#### 3. 定义profile
 ```js
 let profile = {
     nxuser: “xxxxxxxx”, 
-    nxpass:”xxxxxxx”,
+    nxpass:”xxxxxxx”, // 需md5加密，如：MD5(email + ":" + domain + ":" + utcDate)
     logLevel: "error", 
     playTone: 0xFF, 
     nxtype: 6,
@@ -58,9 +124,9 @@ let profile = {
  - **nxuser和nxpass是NXCLOUD的分配的Webcall账户，不是NXCLOUD的用户账户**
  - audioElementId与playElementId 是页面的audio组件的id
  - 如果需要自定义playTone请参考<a href='#audiolist'>列表</a>。
- 
 
-#### 3. 编写回调函数
+
+#### 4. 编写回调函数
 ```js
 function setupEvents(nxwcall) {
     let e = nxwcall.myEvents;
@@ -82,7 +148,7 @@ function setupEvents(nxwcall) {
 ```
 nxwebrtc SDK库封装了多个<a href='#eventlist'>事件通知</a>,可以在相应的事件回调函数中，和业务逻辑互动。
 
-#### 4. 初始化并启动对象
+#### 5. 初始化并启动对象
 把定义的profile作为NxwCall的构造函数的参数，会自动创建nxwcall对象，并且尝试自动执行状态转换，先执行NXAPI 认证，然后连接到wss服务器，然后注册成功后进入UA_READY状态。
 ```js
 function initApp() {  
@@ -93,16 +159,16 @@ function initApp() {
 }
 ```
 
-#### 5. 开始测试
+#### 6. 开始测试
 在 onRegistered 回调完成之后，才能执行呼出、和处理呼入请求。
 本地麦克风测试：
 ```js
 nxwcall.placeCall('9196')
-``` 
+```
 远程服务器测试：
 ```js
 nxwcall.placeCall('4444')
-``` 
+```
 完成测试后，代表你的电话通道已经就绪。
 
 ### 自定义playTone
