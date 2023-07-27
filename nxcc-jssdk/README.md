@@ -37,7 +37,72 @@ let NxwCall = NXW.default; //Type declaration of the object
 let nxwcall = null; // the global instance of the object, not yet initialized
 ````
 
-#### 2. Define the profile
+#### 2. Obtain TOKEN and phone registration information
+
+/admin/saas_plat/user/login -- THE API REQUEST TO OBTAIN THE TOKEN
+
+```
+request
+curl --location --request POST '/admin/saas_plat/user/login' \
+--header 'lang: zh_CN' \
+--header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	loginMethod: 0， // 0 Log in by email， 1 Log in with your mobile phone number
+	email: "email"， // Log in by email，Mobile phone number login：phone： “phone”, 
+	password: "password"
+}'
+body
+{
+    "code": 0,
+    "message": "",
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEsInV1SWQiOiI2NGMyMjBjNmIxYmMyNjUyM2NjMTIyZmQifQ.uMMrkXVSAXht0AN_KlxN2LHhS9GwlmTYYp61Rm0QXGk",
+        "lang": "zh_CN",
+        "time_zone_id": 105,
+        "time_zone": "UTC+08:00"
+    },
+    "traceId": "f062fc22055bd86f236ea63032fed48e"
+}
+
+```
+
+/cc/fs/webCall/register -- The API requests registration information
+
+```
+request
+curl --location --request POST 'cc/fs/webCall/register' \
+--header 'usertoken: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEsInV1SWQiOiI2NGMxY2I2Y2IxYmNlYzE0NjM1ZTIyMGUifQ.rYlUFXIqTnP9vCAkkHIU_jGl5SO_oBJq4nzKp8Ivx7g' \
+--header 'lang: zh_CN' \
+--header 'Authorization;' \
+--header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "agentName": "8618344031797"
+}'
+body
+{
+    "reqId": "41aa5b571b66b33c028c1ef1b1204ecf",
+    "code": 0,
+    "msg": "succees",
+    "data": {
+        "domain": "domain", 
+        "groupNo": "groupNo",  // Agent groups
+        "sipNum": "sipNum",  // Agent account
+        "url": "wssurl",  // wssurl
+        "email": "email",  // email
+        "tenantNickName": ’tenantNickName‘,
+        "company": ’company‘,
+        "tenantName": ’tenantName‘,
+        "roleName": ’roleName‘,
+        "utcDate": "2023/07/27",
+    }
+}
+
+```
+
+
+#### 3. Define the profile
 ````js
 let profile = {
 nxuser: "xxxxxxx", 
@@ -58,9 +123,9 @@ ccQueue: 'groupNo'
 - **nxuser and nxpass are NXCLOUD's assigned webcall accounts, not NXCLOUD's user accounts. **
 - audioElementId and playElementId are the ids of the audio component of the page
 - If you need to customize playTone, please refer to the <a href='#audiolist'>list</a>.
- 
 
-#### 3. Write the callback function
+
+#### 4. Write the callback function
 ````js
 function setupEvents(nxwcall) {
 let e = nxwcall.myEvents;
@@ -82,7 +147,7 @@ console.log("================", "onCallAnswered")
 ````
 The nxwebrtc SDK library encapsulates multiple <a href='#eventlist'>event notifications</a>, which can interact with business logic in the corresponding event callback functions.
 
-#### 4. Initialize and start the object
+#### 5. Initialize and start the object
 Taking the defined profile as the parameter of the NxwCall constructor, the nxwcall object will be automatically created, and it will try to perform state transition automatically. First perform NXAPI authentication, then connect to the wss server, and then enter the UA_READY state after successful registration.
 ````js
 function initApp() {
@@ -93,7 +158,7 @@ setupEvents(nxwcall);
 }
 ````
 
-#### 5. Start testing
+#### 6. Start testing
 After the onRegistered callback is completed, the outgoing call can be performed and the incoming call can be processed.
 Local microphone test:
 ````js
